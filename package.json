@@ -1,7 +1,7 @@
 {
-  "name": "livereload",
-  "description": "LiveReload server",
-  "version": "0.3.1",
+  "name": "livereload2",
+  "description": "this is a version of livereload more recently updated.",
+  "version": "1.0.0",
   "contributors": [
     {
       "name": "Joshua Peek"
@@ -9,6 +9,9 @@
     {
       "name": "Brian P. Hogan",
       "email": "brianhogan@napcs.com"
+    },
+    {
+      "name": "Seb Vincent"
     }
   ],
   "licenses": [
