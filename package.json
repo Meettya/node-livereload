@@ -17,12 +17,12 @@
   "licenses": [
     {
       "type": "MIT",
-      "url": "https://github.com/napcs/node-livereload/blob/master/LICENSE"
+      "url": "https://github.com/sebv/node-livereload/blob/livereload2/LICENSE"
     }
   ],
   "repository": {
     "type": "git",
-    "url": "http://github.com/napcs/node-livereload.git"
+    "url": "https://github.com/sebv/node-livereload/tree/livereload2"
   },
   "bin": {
     "livereload": "./bin/livereload.js"
