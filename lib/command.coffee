@@ -1,4 +1,5 @@
 fs = require 'fs'
+_ = require 'underscore'
 
 runner = ->
 
@@ -27,6 +28,13 @@ runner = ->
       description: "Specify the wait delay (before refresh)."
       value: true
       required: false
+    },
+    {
+      short: "w"
+      long:  "watch"
+      description: "Specify wether to watch directories (default: true)."
+      value: true
+      required: false
     }
   ].reverse(), true
 
@@ -36,6 +44,8 @@ runner = ->
 
   config.port = opts.get('port') or config.port 
   config.delay = opts.get('delay') or config.delay
+  config.watch = _.find [opts.get('watch'), config.watch, true], ( (el) -> el? )
+  config.watch = config.watch is 'true' if typeof config.watch is 'string'
 
   config.debug ?= true
 
@@ -43,9 +53,11 @@ runner = ->
 
   path = resolve(opts.args()[0] or '.')
 
-  console.log("Starting LiveReload on port #{server.config.port} for #{path}")
+  console.log "Started LiveReload on port #{server.config.port}"
   
-  server.watch(path)
+  if config.watch
+    server.watch(path)
+    console.log "LiveReload is watching #{path}"
 
 module.exports =
   run: runner

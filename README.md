@@ -12,12 +12,9 @@ First, install the LiveReload browser plugins by visiting [http://help.livereloa
 To use livereload from the command line:
 
     $ npm install -g livereload2
-    $ livereload [path]
-
-For options:
     $ livereload --help
+    $ livereload [path]
     
-
 Or to use the api within a project:
 
     $ npm install livereload
@@ -51,15 +48,14 @@ The `createServer()` method supports a few basic options, passed as a JavaScript
 * `applyCSSLive` tells LiveReload to reload CSS files in the background instead of refreshing the page. The default for this is `true`.
 * `exclusions` lets you specify files to ignore. By default, this includes `.git/`, `.svn/`, and `.hg/`
 * `alias` lets you specify file extensions to be aliased. By default, this maps `.styl` to `.css`, by which, changing `.styl` file never fires full page reload.
-* `delay` delay in ms before refresh (default: 50)  
+* `delay` delay in ms before reload (default: 50)  
 
-# Trigger refresh programmatically
+# Trigger reload programmatically
 
-The server is listening for post request on "/reload".
+The server is listening for post request on "/reload". For instance the code below triggers reload:
 
     request = require('request');
     request.post('http://localhost:35729/reload');
-
 
 # Limitations
 
