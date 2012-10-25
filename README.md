@@ -3,13 +3,15 @@ node-livereload
 
 An implementation of the LiveReload server in Node.js. It's an alternative to the graphical [http://livereload.com/](http://livereload.com/) application, which monitors files for changes and reloads your web browser.
 
+This is an alternative version of node-livereload, will remove it when the origin package is updated.
+
 # Example Usage
 
 First, install the LiveReload browser plugins by visiting [http://help.livereload.com/kb/general-use/browser-extensions](http://help.livereload.com/kb/general-use/browser-extensions).
 
 To use livereload from the command line:
 
-    $ npm install -g livereload
+    $ npm install -g livereload2
     $ livereload [path]
 
 For options:
