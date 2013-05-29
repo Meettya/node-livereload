@@ -1,47 +1,49 @@
-fs   = require 'fs'
-path = require 'path'
-ws   = require 'websocket.io'
-http  = require 'http'
-express  = require 'express'
-url = require 'url'
-watchr = require('watchr')
-_ = require 'underscore'
+fs        = require 'fs'
+path      = require 'path'
+ws        = require 'websocket.io'
+http      = require 'http'
+express   = require 'express'
+url       = require 'url'
+watchr    = require 'watchr'
+_         = require 'underscore'
 
 DEFAULT_CONFIG =
-  version: '7'
-  port: 35729
-  delay: 50
+  version:  '7'
+  port:     35729
+  delay:    50
+  alias:
+    'styl': 'css'
   exts: [
     'html', 'css', 'js', 'png', 'gif', 'jpg',
     'php', 'php5', 'py', 'rb', 'erb', 'jade'
   ]
-  alias:
-    'styl': 'css'
-  exclusions: ['.git/', '.svn/', '.hg/']
-  applyJSLive: false
+  exclusions:   ['.git/', '.svn/', '.hg/']
+  applyJSLive:  false
   applyCSSLive: true
 
 class Server
 
   constructor: (@config) ->
-    @config = _.defaults @config or {}, DEFAULT_CONFIG
-    
-    @sockets = []
+    _.defaults @config, DEFAULT_CONFIG
+    @sockets  = []
+    @server   = null
     
   listen: ->
     @debug "LiveReload is waiting for browser to connect."
     
-    if @config.server
+    @server = if @config.server
       @config.server.listen @config.port
-      @server = ws.attach(@config.server)
+      ws.attach @config.server
     else
-      @server = ws.listen(@config.port)
+      ws.listen @config.port
 
-    @server.on 'connection', @onConnection.bind @
-    @server.on 'close',      @onClose.bind @
+    @server.on 'connection', @onConnection
+    @server.on 'close',      @onClose
+
+    null
 
 
-  onConnection: (socket) ->
+  onConnection: (socket) =>
     @debug "Browser connected."
     
     socket.send JSON.stringify 
@@ -55,20 +57,15 @@ class Server
       @debug "Browser URL: #{message}"
 
     @sockets.push socket
-    
-  onClose: (socket) ->
-    @debug "Browser disconnected."
-  
-  watch: (source)=>
-    
-    # Watch a directory or file
-    exts       = @config.exts
-    exclusions = @config.exclusions
 
-    watchr.watch
-      path: source
-      ignoreHiddenFiles: yes
-      listener: (eventName, filePath, fileCurrentStat, filePreviousStat)=>
+    null
+    
+  onClose: (socket) =>
+    @debug "Browser disconnected."
+    null
+  
+  _buildLisriner: (exts, exclusions) -> 
+    (eventName, filePath, fileCurrentStat, filePreviousStat)=>
         
         for exclusion in exclusions
           return if filePath.match exclusion
@@ -77,34 +74,48 @@ class Server
           setTimeout =>
             @reloadFile(filePath)
           , @config.delay
+
+  watch: (source) =>
     
+    # Watch a directory or file
+    exts       = @config.exts
+    exclusions = @config.exclusions
+
+    watchr.watch
+      path:               source
+      listener:           @_buildLisriner exts, exclusions
+      ignoreHiddenFiles:  yes
+
+    null
+  
+  _doSend: (data) ->
+    for socket in @sockets
+      socket.send data
+      null
+    null
+
   reloadFile: (filepath) ->
     @debug "Reload file: #{filepath}"
-    ext       = path.extname(filepath).substr(1)
+    ext       = path.extname(filepath).substr 1
     aliasExt  = @config.alias[ext]
     if aliasExt?
       @debug "and aliased to #{aliasExt}"
-      filepath = filepath.replace("." + ext, ".#{aliasExt}")
+      filepath = filepath.replace ".#{ext}", ".#{aliasExt}"
       
-    data = JSON.stringify 
-      command: 'reload',
-      path: filepath,
-      liveJS: @config.applyJSLive,
-      liveCSS: @config.applyCSSLive
-
-    for socket in @sockets
-      socket.send data
+    @_doSend JSON.stringify 
+      command:  'reload'
+      path:     filepath
+      liveJS:   @config.applyJSLive
+      liveCSS:  @config.applyCSSLive
     
   reloadAll: -> 
     @debug "Reload all"
-    data = JSON.stringify 
-      command: 'reload',
-      path: '*'
-      liveJS: false,
-      liveCSS: false
-    
-    for socket in @sockets
-      socket.send data
+
+    @_doSend JSON.stringify 
+      command: 'reload'
+      path:     '*'
+      liveJS:   false
+      liveCSS:  false
 
   debug: (str) ->
     if @config.debug
