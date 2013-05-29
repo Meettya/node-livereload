@@ -1,5 +1,4 @@
 livereload = require '../lib/livereload'
-should = require 'should'
 request = require 'request'
 http = require 'http'
 url = require 'url'
