@@ -33,7 +33,8 @@
     "websocket.io": ">= 0.1.0",
     "watchr": "~2.1.3",
     "express": "~3.0.0",
-    "underscore": "~1.4.2"
+    "underscore": "~1.4.2",
+    "escape-regexp": ">= 0.0.1"
   },
   "devDependencies": {
     "request": ">= 2.9.203",

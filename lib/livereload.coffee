@@ -1,11 +1,13 @@
-fs        = require 'fs'
-path      = require 'path'
-ws        = require 'websocket.io'
-http      = require 'http'
-express   = require 'express'
-url       = require 'url'
-watchr    = require 'watchr'
-_         = require 'underscore'
+fs            = require 'fs'
+path          = require 'path'
+ws            = require 'websocket.io'
+http          = require 'http'
+express       = require 'express'
+url           = require 'url'
+watchr        = require 'watchr'
+_             = require 'underscore'
+escape_regexp = require 'escape-regexp'
+
 
 DEFAULT_CONFIG =
   version:  '7'
@@ -40,8 +42,7 @@ class Server
     @server.on 'connection', @onConnection
     @server.on 'close',      @onClose
 
-    null
-
+    this
 
   onConnection: (socket) =>
     @debug "Browser connected."
@@ -64,29 +65,37 @@ class Server
     @debug "Browser disconnected."
     null
   
-  _buildLisriner: (exts, exclusions) -> 
-    (eventName, filePath, fileCurrentStat, filePreviousStat)=>
+  _buildListiner: (exts, re_exclusions) -> 
+    (eventName, filePath) =>
         
-        for exclusion in exclusions
-          return if filePath.match exclusion
+        for re_exclusion in re_exclusions
+          if re_exclusion.test filePath
+            @debug "Filtered: |#{filePath}| by |#{re_exclusion}| pattern"
+            return null
         
         for ext in exts when filePath.match "\.#{ext}$"
           setTimeout =>
-            @reloadFile(filePath)
+            @reloadFile filePath
           , @config.delay
 
+          null
+        true
+
+  _buildExclusionsRe: (raw_exclusions) ->
+    for raw_exclusion in raw_exclusions
+      new RegExp escape_regexp raw_exclusion
+
+  # Watch a directory or file
   watch: (source) =>
-    
-    # Watch a directory or file
-    exts       = @config.exts
-    exclusions = @config.exclusions
+    exts          = @config.exts
+    re_exclusions = @_buildExclusionsRe @config.exclusions
 
     watchr.watch
       path:               source
-      listener:           @_buildLisriner exts, exclusions
+      listener:           @_buildListiner exts, re_exclusions
       ignoreHiddenFiles:  yes
 
-    null
+    this
   
   _doSend: (data) ->
     for socket in @sockets
